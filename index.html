@@ -1,902 +1,903 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LBCraft - 我的世界服务器</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-        }
-        body {
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            background: linear-gradient(135deg, #0d0d1a 0%, #0a0a2e 50%, #0d0d1a 100%);
-            min-height: 100vh;
-            color: #e0e0e0;
-            overflow-x: hidden;
-        }
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(0, 212, 255, 0.5);
-            border-radius: 50%;
-            animation: float 15s infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
-        }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(123, 44, 191, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); }
-        }
-        @keyframes textGlow {
-            0%, 100% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
-            50% { text-shadow: 0 0 25px rgba(123, 44, 191, 0.8); }
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            position: relative;
-            z-index: 1;
-        }
-        .header {
-            text-align: center;
-            padding: 60px 20px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            margin-bottom: 30px;
-            border: 1px solid rgba(123, 44, 191, 0.3);
-            animation: slideUp 0.8s ease-out, glow 4s ease-in-out infinite;
-            backdrop-filter: blur(10px);
-        }
-        .server-name {
-            font-size: 3.5em;
-            font-weight: bold;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #00d4ff);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: textGlow 3s ease-in-out infinite, gradientShift 4s ease infinite;
-            margin-bottom: 10px;
-        }
-        @keyframes gradientShift {
-            0% { background-position: 0% center; }
-            50% { background-position: 100% center; }
-            100% { background-position: 0% center; }
-        }
-        .tagline {
-            font-size: 1.2em;
-            color: #aaa;
-            margin-top: 10px;
-            animation: fadeIn 1.2s ease-out 0.3s both;
-        }
-        .card {
-            background: rgba(255,255,255,0.03);
-            border-radius: 15px;
-            padding: 30px;
-            margin-bottom: 25px;
-            border: 1px solid rgba(123, 44, 191, 0.15);
-            backdrop-filter: blur(10px);
-            animation: slideUp 0.8s ease-out both;
-            transition: all 0.4s ease;
-        }
-        .card:hover {
-            border-color: rgba(0, 212, 255, 0.4);
-            box-shadow: 0 0 30px rgba(123, 44, 191, 0.2);
-            transform: translateY(-3px);
-        }
-        .card:nth-child(2) { animation-delay: 0.1s; }
-        .card:nth-child(3) { animation-delay: 0.2s; }
-        .card:nth-child(4) { animation-delay: 0.3s; }
-        .card:nth-child(5) { animation-delay: 0.4s; }
-        .card:nth-child(6) { animation-delay: 0.5s; }
-        .card:nth-child(7) { animation-delay: 0.6s; }
-        .card:nth-child(8) { animation-delay: 0.7s; }
-        .card:nth-child(9) { animation-delay: 0.8s; }
-        .card-title {
-            font-size: 1.5em;
-            color: #00d4ff;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .card-title::before {
-            content: "▸";
-            color: #7b2cbf;
-            animation: pulse 2s infinite;
-        }
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .info-item {
-            background: rgba(0,0,0,0.2);
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 3px solid #7b2cbf;
-            transition: all 0.3s ease;
-        }
-        .info-item:hover {
-            border-left-color: #00d4ff;
-            background: rgba(0,212,255,0.05);
-        }
-        .info-label {
-            font-size: 0.85em;
-            color: #888;
-            margin-bottom: 5px;
-        }
-        .info-value {
-            font-size: 1.1em;
-            color: #fff;
-            font-weight: 500;
-        }
-        .perm-list {
-            list-style: none;
-            margin-top: 15px;
-        }
-        .perm-list li {
-            padding: 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-        .perm-list li:hover {
-            padding-left: 10px;
-            color: #00d4ff;
-        }
-        .perm-list li::before {
-            content: "✓";
-            color: #4ade80;
-            font-weight: bold;
-        }
-        .footer {
-            text-align: center;
-            padding: 30px;
-            color: #666;
-            font-size: 0.9em;
-            animation: fadeIn 1.5s ease-out 0.8s both;
-        }
-        .status-online {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #4ade80;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 2s infinite;
-        }
-        .status-offline {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #ef4444;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
-        .status-checking {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            background: #f59e0b;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(1.2); }
-        }
-        .warning-box {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid rgba(255, 193, 7, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            color: #ffc107;
-            font-size: 0.9em;
-        }
-        .notice-box {
-            background: rgba(0, 212, 255, 0.08);
-            border: 1px solid rgba(0, 212, 255, 0.25);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            color: #e0e0e0;
-            line-height: 1.8;
-        }
-        .notice-box p {
-            margin-bottom: 10px;
-        }
-        .notice-box p:last-child {
-            margin-bottom: 0;
-        }
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-top: 15px;
-        }
-        .schedule-day {
-            background: rgba(0,0,0,0.2);
-            border-radius: 10px;
-            padding: 15px 8px;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(123, 44, 191, 0.15);
-        }
-        .schedule-day:hover {
-            transform: translateY(-3px);
-        }
-        .schedule-day.active {
-            background: rgba(0, 212, 255, 0.1);
-            border-color: rgba(0, 212, 255, 0.4);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
-        }
-        .schedule-day.inactive {
-            background: rgba(239, 68, 68, 0.05);
-            border-color: rgba(239, 68, 68, 0.2);
-            opacity: 0.6;
-        }
-        .schedule-day-name {
-            font-size: 0.9em;
-            color: #888;
-            margin-bottom: 8px;
-        }
-        .schedule-day-status {
-            font-size: 1.1em;
-            font-weight: bold;
-        }
-        .schedule-day.active .schedule-day-status {
-            color: #4ade80;
-        }
-        .schedule-day.inactive .schedule-day-status {
-            color: #ef4444;
-        }
-        .status-card {
-            text-align: center;
-            padding: 20px;
-        }
-        .status-text {
-            font-size: 1.3em;
-            margin: 10px 0;
-        }
-        .players-count {
-            font-size: 2em;
-            color: #00d4ff;
-            font-weight: bold;
-            animation: textGlow 2s ease-in-out infinite;
-        }
-        .motd-box {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 0.95em;
-            white-space: pre-wrap;
-            word-break: break-all;
-            border: 1px solid rgba(123, 44, 191, 0.2);
-        }
-        .error-box {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            color: #ef4444;
-        }
-        .refresh-btn {
-            background: linear-gradient(135deg, #0f3460, #16213e);
-            border: 1px solid rgba(0,212,255,0.3);
-            color: #00d4ff;
-            padding: 10px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: 15px;
-            transition: all 0.3s;
-        }
-        .refresh-btn:hover {
-            background: rgba(0,212,255,0.1);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-            transform: scale(1.05);
-        }
-        .player-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-            justify-content: center;
-        }
-        .player-tag {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 4px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            animation: fadeIn 0.5s ease-out;
-        }
-        .link-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-        .link-card {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(123, 44, 191, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            text-decoration: none;
-            color: #e0e0e0;
-            transition: all 0.4s ease;
-            display: block;
-        }
-        .link-card:hover {
-            border-color: rgba(0, 212, 255, 0.5);
-            box-shadow: 0 0 20px rgba(123, 44, 191, 0.3);
-            transform: translateY(-5px) scale(1.02);
-        }
-        .link-icon {
-            font-size: 2em;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .link-title {
-            font-size: 1em;
-            color: #00d4ff;
-            margin-bottom: 5px;
-        }
-        .link-desc {
-            font-size: 0.8em;
-            color: #888;
-        }
-        .rec-server-card {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(123, 44, 191, 0.2);
-            border-radius: 12px;
-            padding: 20px;
-            transition: all 0.4s ease;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-        .rec-server-card:hover {
-            border-color: rgba(0, 212, 255, 0.5);
-            box-shadow: 0 0 20px rgba(123, 44, 191, 0.3);
-            transform: translateY(-3px);
-        }
-        .rec-server-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-        .rec-server-name {
-            font-size: 1.2em;
-            color: #00d4ff;
-            font-weight: bold;
-        }
-        .rec-server-status {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.9em;
-        }
-        .rec-server-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
-        }
-        .rec-server-info-item {
-            background: rgba(0,0,0,0.2);
-            padding: 10px;
-            border-radius: 8px;
-            border-left: 2px solid #7b2cbf;
-        }
-        .rec-server-info-label {
-            font-size: 0.8em;
-            color: #888;
-            margin-bottom: 3px;
-        }
-        .rec-server-info-value {
-            font-size: 0.95em;
-            color: #fff;
-        }
-        .rec-server-motd {
-            background: rgba(0,0,0,0.3);
-            border-radius: 6px;
-            padding: 8px 12px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 0.85em;
-            white-space: pre-wrap;
-            word-break: break-all;
-            border: 1px solid rgba(123, 44, 191, 0.2);
-            color: #ccc;
-        }
-        .rec-server-players {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .rec-server-player-tag {
-            background: rgba(0,212,255,0.15);
-            border: 1px solid rgba(0,212,255,0.3);
-            padding: 3px 10px;
-            border-radius: 12px;
-            font-size: 0.8em;
-        }
-        .rec-server-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            color: #ef4444;
-            font-size: 0.85em;
-        }
-        .rec-server-loading {
-            text-align: center;
-            padding: 15px;
-            color: #888;
-        }
-        .maintenance-note {
-            background: rgba(0, 212, 255, 0.06);
-            border: 1px solid rgba(0, 212, 255, 0.2);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            color: #00d4ff;
-            font-size: 0.9em;
-            line-height: 1.6;
-        }
-        .maintenance-note p {
-            margin-bottom: 8px;
-        }
-        .maintenance-note p:last-child {
-            margin-bottom: 0;
-        }
-    </style>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>LBCraft - 我的世界服务器</title>
+   <style>
+       * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+           -webkit-user-select: none;
+           -moz-user-select: none;
+           -ms-user-select: none;
+           user-select: none;
+           -webkit-touch-callout: none;
+       }
+       body {
+           font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+           background: linear-gradient(135deg, #0d0d1a 0%, #0a0a2e 50%, #0d0d1a 100%);
+           min-height: 100vh;
+           color: #e0e0e0;
+           overflow-x: hidden;
+       }
+       .particles {
+           position: fixed;
+           top: 0;
+           left: 0;
+           width: 100%;
+           height: 100%;
+           pointer-events: none;
+           z-index: 0;
+           overflow: hidden;
+       }
+       .particle {
+           position: absolute;
+           width: 4px;
+           height: 4px;
+           background: rgba(0, 212, 255, 0.5);
+           border-radius: 50%;
+           animation: float 15s infinite;
+       }
+       @keyframes float {
+           0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+           10% { opacity: 1; }
+           90% { opacity: 1; }
+           100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+       }
+       @keyframes slideUp {
+           from { opacity: 0; transform: translateY(40px); }
+           to { opacity: 1; transform: translateY(0); }
+       }
+       @keyframes fadeIn {
+           from { opacity: 0; }
+           to { opacity: 1; }
+       }
+       @keyframes glow {
+           0%, 100% { box-shadow: 0 0 20px rgba(123, 44, 191, 0.3); }
+           50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); }
+       }
+       @keyframes textGlow {
+           0%, 100% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+           50% { text-shadow: 0 0 25px rgba(123, 44, 191, 0.8); }
+       }
+       .container {
+           max-width: 900px;
+           margin: 0 auto;
+           padding: 40px 20px;
+           position: relative;
+           z-index: 1;
+       }
+       .header {
+           text-align: center;
+           padding: 60px 20px;
+           background: rgba(0,0,0,0.3);
+           border-radius: 20px;
+           margin-bottom: 30px;
+           border: 1px solid rgba(123, 44, 191, 0.3);
+           animation: slideUp 0.8s ease-out, glow 4s ease-in-out infinite;
+           backdrop-filter: blur(10px);
+       }
+       .server-name {
+           font-size: 3.5em;
+           font-weight: bold;
+           background: linear-gradient(90deg, #00d4ff, #7b2cbf, #00d4ff);
+           background-size: 200% auto;
+           -webkit-background-clip: text;
+           -webkit-text-fill-color: transparent;
+           background-clip: text;
+           animation: textGlow 3s ease-in-out infinite, gradientShift 4s ease infinite;
+           margin-bottom: 10px;
+       }
+       @keyframes gradientShift {
+           0% { background-position: 0% center; }
+           50% { background-position: 100% center; }
+           100% { background-position: 0% center; }
+       }
+       .tagline {
+           font-size: 1.2em;
+           color: #aaa;
+           margin-top: 10px;
+           animation: fadeIn 1.2s ease-out 0.3s both;
+       }
+       .card {
+           background: rgba(255,255,255,0.03);
+           border-radius: 15px;
+           padding: 30px;
+           margin-bottom: 25px;
+           border: 1px solid rgba(123, 44, 191, 0.15);
+           backdrop-filter: blur(10px);
+           animation: slideUp 0.8s ease-out both;
+           transition: all 0.4s ease;
+       }
+       .card:hover {
+           border-color: rgba(0, 212, 255, 0.4);
+           box-shadow: 0 0 30px rgba(123, 44, 191, 0.2);
+           transform: translateY(-3px);
+       }
+       .card:nth-child(2) { animation-delay: 0.1s; }
+       .card:nth-child(3) { animation-delay: 0.2s; }
+       .card:nth-child(4) { animation-delay: 0.3s; }
+       .card:nth-child(5) { animation-delay: 0.4s; }
+       .card:nth-child(6) { animation-delay: 0.5s; }
+       .card:nth-child(7) { animation-delay: 0.6s; }
+       .card:nth-child(8) { animation-delay: 0.7s; }
+       .card:nth-child(9) { animation-delay: 0.8s; }
+       .card-title {
+           font-size: 1.5em;
+           color: #00d4ff;
+           margin-bottom: 15px;
+           display: flex;
+           align-items: center;
+           gap: 10px;
+       }
+       .card-title::before {
+           content: "▸";
+           color: #7b2cbf;
+           animation: pulse 2s infinite;
+       }
+       .info-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+           gap: 15px;
+           margin-top: 15px;
+       }
+       .info-item {
+           background: rgba(0,0,0,0.2);
+           padding: 15px;
+           border-radius: 10px;
+           border-left: 3px solid #7b2cbf;
+           transition: all 0.3s ease;
+       }
+       .info-item:hover {
+           border-left-color: #00d4ff;
+           background: rgba(0,212,255,0.05);
+       }
+       .info-label {
+           font-size: 0.85em;
+           color: #888;
+           margin-bottom: 5px;
+       }
+       .info-value {
+           font-size: 1.1em;
+           color: #fff;
+           font-weight: 500;
+       }
+       .perm-list {
+           list-style: none;
+           margin-top: 15px;
+       }
+       .perm-list li {
+           padding: 8px 0;
+           border-bottom: 1px solid rgba(255,255,255,0.05);
+           display: flex;
+           align-items: center;
+           gap: 10px;
+           transition: all 0.3s ease;
+       }
+       .perm-list li:hover {
+           padding-left: 10px;
+           color: #00d4ff;
+       }
+       .perm-list li::before {
+           content: "✓";
+           color: #4ade80;
+           font-weight: bold;
+       }
+       .footer {
+           text-align: center;
+           padding: 30px;
+           color: #666;
+           font-size: 0.9em;
+           animation: fadeIn 1.5s ease-out 0.8s both;
+       }
+       .status-online {
+           display: inline-block;
+           width: 10px;
+           height: 10px;
+           background: #4ade80;
+           border-radius: 50%;
+           margin-right: 8px;
+           animation: pulse 2s infinite;
+       }
+       .status-offline {
+           display: inline-block;
+           width: 10px;
+           height: 10px;
+           background: #ef4444;
+           border-radius: 50%;
+           margin-right: 8px;
+       }
+       .status-checking {
+           display: inline-block;
+           width: 10px;
+           height: 10px;
+           background: #f59e0b;
+           border-radius: 50%;
+           margin-right: 8px;
+           animation: pulse 1s infinite;
+       }
+       @keyframes pulse {
+           0%, 100% { opacity: 1; transform: scale(1); }
+           50% { opacity: 0.5; transform: scale(1.2); }
+       }
+       .warning-box {
+           background: rgba(255, 193, 7, 0.1);
+           border: 1px solid rgba(255, 193, 7, 0.3);
+           border-radius: 10px;
+           padding: 15px;
+           margin-top: 15px;
+           color: #ffc107;
+           font-size: 0.9em;
+       }
+       .notice-box {
+           background: rgba(0, 212, 255, 0.08);
+           border: 1px solid rgba(0, 212, 255, 0.25);
+           border-radius: 10px;
+           padding: 20px;
+           margin-top: 15px;
+           color: #e0e0e0;
+           line-height: 1.8;
+       }
+       .notice-box p {
+           margin-bottom: 10px;
+       }
+       .notice-box p:last-child {
+           margin-bottom: 0;
+       }
+       .schedule-grid {
+           display: grid;
+           grid-template-columns: repeat(7, 1fr);
+           gap: 8px;
+           margin-top: 15px;
+       }
+       .schedule-day {
+           background: rgba(0,0,0,0.2);
+           border-radius: 10px;
+           padding: 15px 8px;
+           text-align: center;
+           transition: all 0.3s ease;
+           border: 1px solid rgba(123, 44, 191, 0.15);
+       }
+       .schedule-day:hover {
+           transform: translateY(-3px);
+       }
+       .schedule-day.active {
+           background: rgba(0, 212, 255, 0.1);
+           border-color: rgba(0, 212, 255, 0.4);
+           box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+       }
+       .schedule-day.inactive {
+           background: rgba(239, 68, 68, 0.05);
+           border-color: rgba(239, 68, 68, 0.2);
+           opacity: 0.6;
+       }
+       .schedule-day-name {
+           font-size: 0.9em;
+           color: #888;
+           margin-bottom: 8px;
+       }
+       .schedule-day-status {
+           font-size: 1.1em;
+           font-weight: bold;
+       }
+       .schedule-day.active .schedule-day-status {
+           color: #4ade80;
+       }
+       .schedule-day.inactive .schedule-day-status {
+           color: #ef4444;
+       }
+       .status-card {
+           text-align: center;
+           padding: 20px;
+       }
+       .status-text {
+           font-size: 1.3em;
+           margin: 10px 0;
+       }
+       .players-count {
+           font-size: 2em;
+           color: #00d4ff;
+           font-weight: bold;
+           animation: textGlow 2s ease-in-out infinite;
+       }
+       .motd-box {
+           background: rgba(0,0,0,0.3);
+           border-radius: 8px;
+           padding: 12px;
+           margin-top: 10px;
+           font-family: monospace;
+           font-size: 0.95em;
+           white-space: pre-wrap;
+           word-break: break-all;
+           border: 1px solid rgba(123, 44, 191, 0.2);
+       }
+       .error-box {
+           background: rgba(239, 68, 68, 0.1);
+           border: 1px solid rgba(239, 68, 68, 0.3);
+           border-radius: 10px;
+           padding: 15px;
+           margin-top: 15px;
+           color: #ef4444;
+       }
+       .refresh-btn {
+           background: linear-gradient(135deg, #0f3460, #16213e);
+           border: 1px solid rgba(0,212,255,0.3);
+           color: #00d4ff;
+           padding: 10px 24px;
+           border-radius: 8px;
+           cursor: pointer;
+           font-size: 1em;
+           margin-top: 15px;
+           transition: all 0.3s;
+       }
+       .refresh-btn:hover {
+           background: rgba(0,212,255,0.1);
+           box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+           transform: scale(1.05);
+       }
+       .player-list {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 8px;
+           margin-top: 10px;
+           justify-content: center;
+       }
+       .player-tag {
+           background: rgba(0,212,255,0.15);
+           border: 1px solid rgba(0,212,255,0.3);
+           padding: 4px 12px;
+           border-radius: 15px;
+           font-size: 0.85em;
+           animation: fadeIn 0.5s ease-out;
+       }
+       .link-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+           gap: 15px;
+           margin-top: 15px;
+       }
+       .link-card {
+           background: rgba(0,0,0,0.2);
+           border: 1px solid rgba(123, 44, 191, 0.2);
+           border-radius: 12px;
+           padding: 20px;
+           text-align: center;
+           text-decoration: none;
+           color: #e0e0e0;
+           transition: all 0.4s ease;
+           display: block;
+       }
+       .link-card:hover {
+           border-color: rgba(0, 212, 255, 0.5);
+           box-shadow: 0 0 20px rgba(123, 44, 191, 0.3);
+           transform: translateY(-5px) scale(1.02);
+       }
+       .link-icon {
+           font-size: 2em;
+           margin-bottom: 8px;
+           display: block;
+       }
+       .link-title {
+           font-size: 1em;
+           color: #00d4ff;
+           margin-bottom: 5px;
+       }
+       .link-desc {
+           font-size: 0.8em;
+           color: #888;
+       }
+       .rec-server-card {
+           background: rgba(0,0,0,0.2);
+           border: 1px solid rgba(123, 44, 191, 0.2);
+           border-radius: 12px;
+           padding: 20px;
+           transition: all 0.4s ease;
+           cursor: pointer;
+           margin-bottom: 15px;
+       }
+       .rec-server-card:hover {
+           border-color: rgba(0, 212, 255, 0.5);
+           box-shadow: 0 0 20px rgba(123, 44, 191, 0.3);
+           transform: translateY(-3px);
+       }
+       .rec-server-header {
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+           margin-bottom: 12px;
+       }
+       .rec-server-name {
+           font-size: 1.2em;
+           color: #00d4ff;
+           font-weight: bold;
+       }
+       .rec-server-status {
+           display: flex;
+           align-items: center;
+           gap: 6px;
+           font-size: 0.9em;
+       }
+       .rec-server-info {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+           gap: 10px;
+           margin-top: 10px;
+       }
+       .rec-server-info-item {
+           background: rgba(0,0,0,0.2);
+           padding: 10px;
+           border-radius: 8px;
+           border-left: 2px solid #7b2cbf;
+       }
+       .rec-server-info-label {
+           font-size: 0.8em;
+           color: #888;
+           margin-bottom: 3px;
+       }
+       .rec-server-info-value {
+           font-size: 0.95em;
+           color: #fff;
+       }
+       .rec-server-motd {
+           background: rgba(0,0,0,0.3);
+           border-radius: 6px;
+           padding: 8px 12px;
+           margin-top: 10px;
+           font-family: monospace;
+           font-size: 0.85em;
+           white-space: pre-wrap;
+           word-break: break-all;
+           border: 1px solid rgba(123, 44, 191, 0.2);
+           color: #ccc;
+       }
+       .rec-server-players {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 6px;
+           margin-top: 10px;
+       }
+       .rec-server-player-tag {
+           background: rgba(0,212,255,0.15);
+           border: 1px solid rgba(0,212,255,0.3);
+           padding: 3px 10px;
+           border-radius: 12px;
+           font-size: 0.8em;
+       }
+       .rec-server-error {
+           background: rgba(239, 68, 68, 0.1);
+           border: 1px solid rgba(239, 68, 68, 0.3);
+           border-radius: 8px;
+           padding: 10px;
+           margin-top: 10px;
+           color: #ef4444;
+           font-size: 0.85em;
+       }
+       .rec-server-loading {
+           text-align: center;
+           padding: 15px;
+           color: #888;
+       }
+       .maintenance-note {
+           background: rgba(0, 212, 255, 0.06);
+           border: 1px solid rgba(0, 212, 255, 0.2);
+           border-radius: 10px;
+           padding: 15px;
+           margin-top: 15px;
+           color: #00d4ff;
+           font-size: 0.9em;
+           line-height: 1.6;
+       }
+       .maintenance-note p {
+           margin-bottom: 8px;
+       }
+       .maintenance-note p:last-child {
+           margin-bottom: 0;
+       }
+   </style>
 </head>
 <body oncontextmenu="return false;">
-    <div class="particles" id="particles"></div>
+   <div class="particles" id="particles"></div>
 
-    <div class="container">
-        <div class="header">
-            <div class="server-name">LBCraft</div>
-            <div class="tagline">凌冰工作室出品 · 自由探索 · 安心建造</div>
-            <div style="margin-top: 20px;" id="serverStatusIndicator">
-                <span class="status-checking"></span><span id="statusText">正在检查服务器状态...</span>
-            </div>
-        </div>
+   <div class="container">
+       <div class="header">
+           <div class="server-name">LBCraft</div>
+           <div class="tagline">凌冰工作室出品 · 自由探索 · 安心建造</div>
+           <div style="margin-top: 20px;" id="serverStatusIndicator">
+               <span class="status-checking"></span><span id="statusText">正在检查服务器状态...</span>
+           </div>
+       </div>
 
-        <div class="card" id="statusCard" style="display: none;">
-            <div class="card-title">实时状态</div>
-            <div class="status-card" id="statusContent"></div>
-            <div style="text-align: center;">
-                <button class="refresh-btn" onclick="checkServer()">🔄 刷新状态</button>
-            </div>
-        </div>
+       <div class="card" id="statusCard" style="display: none;">
+           <div class="card-title">实时状态</div>
+           <div class="status-card" id="statusContent"></div>
+           <div style="text-align: center;">
+               <button class="refresh-btn" onclick="checkServer()">🔄 刷新状态</button>
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">服务器信息</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">服务端版本</div>
-                    <div class="info-value">1.21.11 (Paper)</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">世界名称</div>
-                    <div class="info-value">LBCraft</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">支持客户端版本</div>
-                    <div class="info-value">1.7.x – 1.21.x</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">验证方式</div>
-                    <div class="info-value">LittleSkin + AuthMe</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">服务器地址</div>
-                    <div class="info-value">play.simpfun.cn:22569</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">跨版本支持</div>
-                    <div class="info-value">ViaVersion + ViaBackwards + ViaRewind</div>
-                </div>
-            </div>
-        </div>
+       <div class="card">
+           <div class="card-title">服务器信息</div>
+           <div class="info-grid">
+               <div class="info-item">
+                   <div class="info-label">服务端版本</div>
+                   <div class="info-value">1.21.11 (Paper)</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">世界名称</div>
+                   <div class="info-value">LBCraft</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">支持客户端版本</div>
+                   <div class="info-value">1.7.x – 1.21.x</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">验证方式</div>
+                   <div class="info-value">LittleSkin + AuthMe</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">服务器地址</div>
+                   <div class="info-value">play.simpfun.cn:22569</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">跨版本支持</div>
+                   <div class="info-value">ViaVersion + ViaBackwards + ViaRewind</div>
+               </div>
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">开服时间</div>
-            <div class="notice-box">
-                <p>由于服务器完全免费运营，运维成本全部由凌冰工作室承担，为避免过高的资源消耗与运维压力，服务器仅在以下时段开放：</p>
-            </div>
-            <div class="schedule-grid">
-                <div class="schedule-day inactive">
-                    <div class="schedule-day-name">周一</div>
-                    <div class="schedule-day-status">休息</div>
-                </div>
-                <div class="schedule-day inactive">
-                    <div class="schedule-day-name">周二</div>
-                    <div class="schedule-day-status">休息</div>
-                </div>
-                <div class="schedule-day inactive">
-                    <div class="schedule-day-name">周三</div>
-                    <div class="schedule-day-status">休息</div>
-                </div>
-                <div class="schedule-day active">
-                    <div class="schedule-day-name">周四</div>
-                    <div class="schedule-day-status">开放</div>
-                </div>
-                <div class="schedule-day active">
-                    <div class="schedule-day-name">周五</div>
-                    <div class="schedule-day-status">开放</div>
-                </div>
-                <div class="schedule-day active">
-                    <div class="schedule-day-name">周六</div>
-                    <div class="schedule-day-status">开放</div>
-                </div>
-                <div class="schedule-day active">
-                    <div class="schedule-day-name">周日</div>
-                    <div class="schedule-day-status">开放</div>
-                </div>
-            </div>
-            <div class="maintenance-note">
-                <p>💡 休息时间服务器状态 API 仍正常运行，但服务器可能处于维护模式。若检测到离线，通常是因为正在进行日常维护或更新，并非服务器故障。</p>
-                <p>维护内容包括：插件更新、数据备份、性能优化、安全补丁等。维护完成后服务器将自动恢复在线。</p>
-            </div>
-        </div>
+       <div class="card">
+           <div class="card-title">开服时间</div>
+           <div class="notice-box">
+               <p>由于服务器完全免费运营，运维成本全部由凌冰工作室承担，为避免过高的资源消耗与运维压力，服务器仅在以下时段开放：</p>
+           </div>
+           <div class="schedule-grid">
+               <div class="schedule-day inactive">
+                   <div class="schedule-day-name">周一</div>
+                   <div class="schedule-day-status">休息</div>
+               </div>
+               <div class="schedule-day inactive">
+                   <div class="schedule-day-name">周二</div>
+                   <div class="schedule-day-status">休息</div>
+               </div>
+               <div class="schedule-day inactive">
+                   <div class="schedule-day-name">周三</div>
+                   <div class="schedule-day-status">休息</div>
+               </div>
+               <div class="schedule-day active">
+                   <div class="schedule-day-name">周四</div>
+                   <div class="schedule-day-status">开放</div>
+               </div>
+               <div class="schedule-day active">
+                   <div class="schedule-day-name">周五</div>
+                   <div class="schedule-day-status">开放</div>
+               </div>
+               <div class="schedule-day active">
+                   <div class="schedule-day-name">周六</div>
+                   <div class="schedule-day-status">开放</div>
+               </div>
+               <div class="schedule-day active">
+                   <div class="schedule-day-name">周日</div>
+                   <div class="schedule-day-status">开放</div>
+               </div>
+           </div>
+           <div class="maintenance-note">
+               <p>💡 休息时间服务器状态 API 仍正常运行，但服务器可能处于维护模式。若检测到离线，通常是因为正在进行日常维护或更新，并非服务器故障。</p>
+               <p>维护内容包括：插件更新、数据备份、性能优化、安全补丁等。维护完成后服务器将自动恢复在线。</p>
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">玩家权限</div>
-            <p style="color: #aaa; margin-bottom: 10px;">所有玩家默认拥有以下权限：</p>
-            <ul class="perm-list">
-                <li>/back - 返回死亡点或上次传送位置</li>
-                <li>/report - 举报违规行为</li>
-                <li>/home - 设置与传送回家</li>
-                <li>/tpa - 请求传送到其他玩家</li>
-            </ul>
-            <p style="color: #aaa; margin-top: 15px; margin-bottom: 10px;">管理员额外权限：</p>
-            <ul class="perm-list">
-                <li>/rtp - 随机传送</li>
-                <li>/seed - 查看世界种子</li>
-            </ul>
-            <div class="warning-box">
-                ⚠ 权限管理由 LuckPerms 负责，确保公平与秩序
-            </div>
-        </div>
+       <div class="card">
+           <div class="card-title">玩家权限</div>
+           <p style="color: #aaa; margin-bottom: 10px;">所有玩家默认拥有以下权限：</p>
+           <ul class="perm-list">
+               <li>/back - 返回死亡点或上次传送位置</li>
+               <li>/report - 举报违规行为</li>
+               <li>/home - 设置与传送回家</li>
+               <li>/tpa - 请求传送到其他玩家</li>
+           </ul>
+           <p style="color: #aaa; margin-top: 15px; margin-bottom: 10px;">管理员额外权限：</p>
+           <ul class="perm-list">
+               <li>/rtp - 随机传送</li>
+               <li>/seed - 查看世界种子</li>
+           </ul>
+           <div class="warning-box">
+               ⚠ 权限管理由 LuckPerms 负责，确保公平与秩序
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">安全与保护</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">领地保护</div>
-                    <div class="info-value">GriefPrevention</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">操作记录</div>
-                    <div class="info-value">CoreProtect</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">封禁管理</div>
-                    <div class="info-value">AdvancedBan</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">登录验证</div>
-                    <div class="info-value">AuthMe</div>
-                </div>
-            </div>
-        </div>
+       <div class="card">
+           <div class="card-title">安全与保护</div>
+           <div class="info-grid">
+               <div class="info-item">
+                   <div class="info-label">领地保护</div>
+                   <div class="info-value">GriefPrevention</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">操作记录</div>
+                   <div class="info-value">CoreProtect</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">封禁管理</div>
+                   <div class="info-value">AdvancedBan</div>
+               </div>
+               <div class="info-item">
+                   <div class="info-label">登录验证</div>
+                   <div class="info-value">AuthMe</div>
+               </div>
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">相关链接</div>
-            <div class="link-grid">
-                <a href="https://littleskin.cn/?lang=zh_CN" target="_blank" class="link-card">
-                    <span class="link-icon">🎭</span>
-                    <div class="link-title">注册 LittleSkin</div>
-                    <div class="link-desc">免费皮肤站与外置登录</div>
-                </a>
-                <a href="https://www.minecraft.net/zh-hans/about-minecraft" target="_blank" class="link-card">
-                    <span class="link-icon">🎮</span>
-                    <div class="link-title">购买 Minecraft</div>
-                    <div class="link-desc">正版 Java 版官方商店</div>
-                </a>
-                <a href="https://pcl.ruanmao.net/" target="_blank" class="link-card">
-                    <span class="link-icon">🚀</span>
-                    <div class="link-title">下载 PCL2</div>
-                    <div class="link-desc">Plain Craft Launcher 2</div>
-                </a>
-                <a href="https://hmcl.huangyuhui.net/" target="_blank" class="link-card">
-                    <span class="link-icon">⚙️</span>
-                    <div class="link-title">下载 HMCL</div>
-                    <div class="link-desc">Hello Minecraft Launcher</div>
-                </a>
-                <a href="https://foldcraftlauncher.cn" target="_blank" class="link-card">
-                    <span class="link-icon">📱</span>
-                    <div class="link-title">下载 FCL</div>
-                    <div class="link-desc">Fold Craft Launcher 手机版</div>
-                </a>
-            </div>
-        </div>
+       <div class="card">
+           <div class="card-title">相关链接</div>
+           <div class="link-grid">
+               <a href="https://littleskin.cn/?lang=zh_CN" target="_blank" class="link-card">
+                   <span class="link-icon">🎭</span>
+                   <div class="link-title">注册 LittleSkin</div>
+                   <div class="link-desc">免费皮肤站与外置登录</div>
+               </a>
+               <a href="https://www.minecraft.net/zh-hans/about-minecraft" target="_blank" class="link-card">
+                   <span class="link-icon">🎮</span>
+                   <div class="link-title">购买 Minecraft</div>
+                   <div class="link-desc">正版 Java 版官方商店</div>
+               </a>
+               <a href="https://pcl.ruanmao.net/" target="_blank" class="link-card">
+                   <span class="link-icon">🚀</span>
+                   <div class="link-title">下载 PCL2</div>
+                   <div class="link-desc">Plain Craft Launcher 2</div>
+               </a>
+               <a href="https://hmcl.huangyuhui.net/" target="_blank" class="link-card">
+                   <span class="link-icon">⚙️</span>
+                   <div class="link-title">下载 HMCL</div>
+                   <div class="link-desc">Hello Minecraft Launcher</div>
+               </a>
+               <a href="https://foldcraftlauncher.cn" target="_blank" class="link-card">
+                   <span class="link-icon">📱</span>
+                   <div class="link-title">下载 FCL</div>
+                   <div class="link-desc">Fold Craft Launcher 手机版</div>
+               </a>
+           </div>
+       </div>
 
-        <div class="card">
-            <div class="card-title">关于凌冰</div>
-            <p style="line-height: 1.8; color: #ccc;">
-                LBCraft 由凌冰（LingBing）工作室运营。我们致力于打造稳定、自由、安全的 Minecraft 多人游戏环境，让每一位玩家都能安心建造、自由探索。
-            </p>
-        </div>
+       <div class="card">
+           <div class="card-title">关于凌冰</div>
+           <p style="line-height: 1.8; color: #ccc;">
+               LBCraft 由凌冰（LingBing）工作室运营。我们致力于打造稳定、自由、安全的 Minecraft 多人游戏环境，让每一位玩家都能安心建造、自由探索。
+           </p>
+       </div>
 
-        <div class="card">
-            <div class="card-title">推荐服务器</div>
-            <p style="color: #888; margin-bottom: 15px; font-size: 0.9em;">以下服务器与本站无直接关联，仅供玩家参考与游玩</p>
-            <div id="recServers"></div>
-        </div>
+       <div class="card">
+           <div class="card-title">推荐服务器</div>
+           <p style="color: #888; margin-bottom: 15px; font-size: 0.9em;">以下服务器与本站无直接关联，仅供玩家参考与游玩</p>
+           <div id="recServers"></div>
+       </div>
 
-        <div class="footer">
-            <p>© 2026 LBCraft · 凌冰工作室</p>
-            <p style="margin-top: 10px;">发布日期： 2026-06-11</p>
-        </div>
-    </div>
+       <div class="footer">
+           <p>© 2026 LBCraft · 凌冰工作室</p>
+           <p style="margin-top: 10px;">发布日期： 2026-06-11</p>
+       </div>
+   </div>
 
-    <script>
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
-                const p = document.createElement('div');
-                p.className = 'particle';
-                p.style.left = Math.random() * 100 + '%';
-                p.style.animationDelay = Math.random() * 15 + 's';
-                p.style.animationDuration = (10 + Math.random() * 10) + 's';
-                const size = 2 + Math.random() * 4;
-                p.style.width = size + 'px';
-                p.style.height = size + 'px';
-                const colors = ['rgba(0, 212, 255, 0.5)', 'rgba(123, 44, 191, 0.5)', 'rgba(0, 212, 255, 0.3)'];
-                p.style.background = colors[Math.floor(Math.random() * colors.length)];
-                container.appendChild(p);
-            }
-        }
-        createParticles();
+   <script>
+       function createParticles() {
+           const container = document.getElementById('particles');
+           for (let i = 0; i < 30; i++) {
+               const p = document.createElement('div');
+               p.className = 'particle';
+               p.style.left = Math.random() * 100 + '%';
+               p.style.animationDelay = Math.random() * 15 + 's';
+               p.style.animationDuration = (10 + Math.random() * 10) + 's';
+               const size = 2 + Math.random() * 4;
+               p.style.width = size + 'px';
+               p.style.height = size + 'px';
+               const colors = ['rgba(0, 212, 255, 0.5)', 'rgba(123, 44, 191, 0.5)', 'rgba(0, 212, 255, 0.3)'];
+               p.style.background = colors[Math.floor(Math.random() * colors.length)];
+               container.appendChild(p);
+           }
+       }
+       createParticles();
 
-        document.addEventListener('keydown', function(e) {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X')) {
-                e.preventDefault();
-            }
-        });
-        document.addEventListener('copy', function(e) { e.preventDefault(); });
-        document.addEventListener('cut', function(e) { e.preventDefault(); });
-        document.addEventListener('selectstart', function(e) { e.preventDefault(); });
+       document.addEventListener('keydown', function(e) {
+           if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X')) {
+               e.preventDefault();
+           }
+       });
+       document.addEventListener('copy', function(e) { e.preventDefault(); });
+       document.addEventListener('cut', function(e) { e.preventDefault(); });
+       document.addEventListener('selectstart', function(e) { e.preventDefault(); });
 
-        const SERVER_HOST = 'play.simpfun.cn';
-        const SERVER_PORT = '22569';
+       const SERVER_HOST = 'play.simpfun.cn';
+       const SERVER_PORT = '22569';
 
-        const REC_SERVERS = [
-            { name: 'Syutopia Server', host: 'syutopia.top', port: '25565', desc: '时雨邦生存服务器', website: 'https://www.syutopia.top' },
-            { name: 'YHMC', host: 'game.yhmc.top', port: '25565', desc: '以和为贵服务器', website: 'https://docs.qq.com/aio/DU3djUkxDSk5ZSmxC?p=LHyBzjFZyJWF4sClfFdadX' },
-            { name: 'NPCS', host: 'play.npcsmc.com', port: '23333', desc: '新土共建服务器', website: 'https://www.npcsmc.com' }
-        ];
+       const REC_SERVERS = [
+           { name: '和平小镇', host: 'mc.hepingxy.top', port: '25565', desc: '和平小镇服务器', website: 'https://hepingxy.top' },
+           { name: 'Syutopia Server', host: 'syutopia.top', port: '25565', desc: '时雨邦生存服务器', website: 'https://www.syutopia.top' },
+           { name: 'YHMC', host: 'game.yhmc.top', port: '25565', desc: '以和为贵服务器', website: 'https://docs.qq.com/aio/DU3djUkxDSk5ZSmxC?p=LHyBzjFZyJWF4sClfFdadX' },
+           { name: 'NPCS', host: 'play.npcsmc.com', port: '23333', desc: '新土共建服务器', website: 'https://www.npcsmc.com' }
+       ];
 
-        async function checkServer() {
-            const indicator = document.getElementById('serverStatusIndicator');
-            const statusCard = document.getElementById('statusCard');
-            const statusContent = document.getElementById('statusContent');
+       async function checkServer() {
+           const indicator = document.getElementById('serverStatusIndicator');
+           const statusCard = document.getElementById('statusCard');
+           const statusContent = document.getElementById('statusContent');
 
-            indicator.innerHTML = '<span class="status-checking"></span><span id="statusText">正在检查服务器状态...</span>';
-            statusCard.style.display = 'none';
+           indicator.innerHTML = '<span class="status-checking"></span><span id="statusText">正在检查服务器状态...</span>';
+           statusCard.style.display = 'none';
 
-            try {
-                const response = await fetch(`https://api.mcstatus.io/v2/status/java/${SERVER_HOST}:${SERVER_PORT}`);
-                if (!response.ok) throw new Error('API 请求失败');
-                const data = await response.json();
+           try {
+               const response = await fetch(`https://api.mcstatus.io/v2/status/java/${SERVER_HOST}:${SERVER_PORT}`);
+               if (!response.ok) throw new Error('API 请求失败');
+               const data = await response.json();
 
-                statusCard.style.display = 'block';
+               statusCard.style.display = 'block';
 
-                if (data.online) {
-                    const playersOnline = data.players?.online ?? 0;
-                    const playersMax = data.players?.max ?? 0;
-                    const version = data.version?.name_clean ?? '未知';
-                    const motd = data.motd?.clean ?? '无 MOTD';
-                    const playerList = data.players?.list ?? [];
+               if (data.online) {
+                   const playersOnline = data.players?.online ?? 0;
+                   const playersMax = data.players?.max ?? 0;
+                   const version = data.version?.name_clean ?? '未知';
+                   const motd = data.motd?.clean ?? '无 MOTD';
+                   const playerList = data.players?.list ?? [];
 
-                    indicator.innerHTML = `<span class="status-online"></span><span style="color: #4ade80;">服务器在线</span>`;
+                   indicator.innerHTML = `<span class="status-online"></span><span style="color: #4ade80;">服务器在线</span>`;
 
-                    let html = `
-                        <div class="status-text" style="color: #4ade80;">✅ 服务器在线</div>
-                        <div style="margin: 15px 0;">
-                            <div class="players-count">${playersOnline} / ${playersMax}</div>
-                            <div style="color: #888; margin-top: 5px;">在线玩家 / 最大容量</div>
-                        </div>
-                        <div class="info-grid" style="margin-top: 15px;">
-                            <div class="info-item">
-                                <div class="info-label">当前版本</div>
-                                <div class="info-value">${version}</div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">延迟</div>
-                                <div class="info-value">${data.retrieved_at ? '正常' : '未知'}</div>
-                            </div>
-                        </div>
-                        <div class="motd-box">${motd}</div>
-                    `;
+                   let html = `
+                       <div class="status-text" style="color: #4ade80;">✅ 服务器在线</div>
+                       <div style="margin: 15px 0;">
+                           <div class="players-count">${playersOnline} / ${playersMax}</div>
+                           <div style="color: #888; margin-top: 5px;">在线玩家 / 最大容量</div>
+                       </div>
+                       <div class="info-grid" style="margin-top: 15px;">
+                           <div class="info-item">
+                               <div class="info-label">当前版本</div>
+                               <div class="info-value">${version}</div>
+                           </div>
+                           <div class="info-item">
+                               <div class="info-label">延迟</div>
+                               <div class="info-value">${data.retrieved_at ? '正常' : '未知'}</div>
+                           </div>
+                       </div>
+                       <div class="motd-box">${motd}</div>
+                   `;
 
-                    if (playerList.length > 0) {
-                        html += `<div style="margin-top: 15px;"><div style="color: #888; margin-bottom: 8px;">在线玩家：</div><div class="player-list">`;
-                        playerList.forEach(p => {
-                            html += `<span class="player-tag">${p.name_clean}</span>`;
-                        });
-                        html += `</div></div>`;
-                    }
+                   if (playerList.length > 0) {
+                       html += `<div style="margin-top: 15px;"><div style="color: #888; margin-bottom: 8px;">在线玩家：</div><div class="player-list">`;
+                       playerList.forEach(p => {
+                           html += `<span class="player-tag">${p.name_clean}</span>`;
+                       });
+                       html += `</div></div>`;
+                   }
 
-                    statusContent.innerHTML = html;
-                } else {
-                    indicator.innerHTML = `<span class="status-offline"></span><span style="color: #ef4444;">服务器离线</span>`;
-                    statusContent.innerHTML = `
-                        <div class="status-text" style="color: #ef4444;">❌ 服务器离线或无法连接</div>
-                        <div class="error-box">
-                            无法连接到 ${SERVER_HOST}:${SERVER_PORT}<br>
-                            服务器可能正在维护或已关闭
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                indicator.innerHTML = `<span class="status-offline"></span><span style="color: #ef4444;">查询失败</span>`;
-                statusCard.style.display = 'block';
-                statusContent.innerHTML = `
-                    <div class="status-text" style="color: #ef4444;">⚠ 查询出错</div>
-                    <div class="error-box">
-                        无法获取服务器状态信息<br>
-                        错误：${error.message}<br><br>
-                        <span style="color: #aaa; font-size: 0.9em;">你可以直接在游戏内添加服务器查看状态</span>
-                    </div>
-                `;
-            }
-        }
+                   statusContent.innerHTML = html;
+               } else {
+                   indicator.innerHTML = `<span class="status-offline"></span><span style="color: #ef4444;">服务器离线</span>`;
+                   statusContent.innerHTML = `
+                       <div class="status-text" style="color: #ef4444;">❌ 服务器离线或无法连接</div>
+                       <div class="error-box">
+                           无法连接到 ${SERVER_HOST}:${SERVER_PORT}<br>
+                           服务器可能正在维护或已关闭
+                       </div>
+                   `;
+               }
+           } catch (error) {
+               indicator.innerHTML = `<span class="status-offline"></span><span style="color: #ef4444;">查询失败</span>`;
+               statusCard.style.display = 'block';
+               statusContent.innerHTML = `
+                   <div class="status-text" style="color: #ef4444;">⚠ 查询出错</div>
+                   <div class="error-box">
+                       无法获取服务器状态信息<br>
+                       错误：${error.message}<br><br>
+                       <span style="color: #aaa; font-size: 0.9em;">你可以直接在游戏内添加服务器查看状态</span>
+                   </div>
+               `;
+           }
+       }
 
-        async function checkRecServers() {
-            const container = document.getElementById('recServers');
-            container.innerHTML = '';
+       async function checkRecServers() {
+           const container = document.getElementById('recServers');
+           container.innerHTML = '';
 
-            for (const server of REC_SERVERS) {
-                const card = document.createElement('div');
-                card.className = 'rec-server-card';
-                card.innerHTML = `
-                    <div class="rec-server-loading">
-                        <span class="status-checking"></span> 正在查询 ${server.name}...
-                    </div>
-                `;
-                container.appendChild(card);
+           for (const server of REC_SERVERS) {
+               const card = document.createElement('div');
+               card.className = 'rec-server-card';
+               card.innerHTML = `
+                   <div class="rec-server-loading">
+                       <span class="status-checking"></span> 正在查询 ${server.name}...
+                   </div>
+               `;
+               container.appendChild(card);
 
-                try {
-                    const response = await fetch(`https://api.mcstatus.io/v2/status/java/${server.host}:${server.port}`);
-                    if (!response.ok) throw new Error('API 请求失败');
-                    const data = await response.json();
+               try {
+                   const response = await fetch(`https://api.mcstatus.io/v2/status/java/${server.host}:${server.port}`);
+                   if (!response.ok) throw new Error('API 请求失败');
+                   const data = await response.json();
 
-                    if (data.online) {
-                        const playersOnline = data.players?.online ?? 0;
-                        const playersMax = data.players?.max ?? 0;
-                        const version = data.version?.name_clean ?? '未知';
-                        const motd = data.motd?.clean ?? '无 MOTD';
-                        const playerList = data.players?.list ?? [];
+                   if (data.online) {
+                       const playersOnline = data.players?.online ?? 0;
+                       const playersMax = data.players?.max ?? 0;
+                       const version = data.version?.name_clean ?? '未知';
+                       const motd = data.motd?.clean ?? '无 MOTD';
+                       const playerList = data.players?.list ?? [];
 
-                        let html = `
-                            <div class="rec-server-header">
-                                <div class="rec-server-name">${server.name}</div>
-                                <div class="rec-server-status">
-                                    <span class="status-online"></span>
-                                    <span style="color: #4ade80;">在线</span>
-                                </div>
-                            </div>
-                            <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
-                            <div class="rec-server-info">
-                                <div class="rec-server-info-item">
-                                    <div class="rec-server-info-label">在线玩家</div>
-                                    <div class="rec-server-info-value" style="color: #00d4ff; font-weight: bold;">${playersOnline} / ${playersMax}</div>
-                                </div>
-                                <div class="rec-server-info-item">
-                                    <div class="rec-server-info-label">当前版本</div>
-                                    <div class="rec-server-info-value">${version}</div>
-                                </div>
-                                <div class="rec-server-info-item">
-                                    <div class="rec-server-info-label">服务器地址</div>
-                                    <div class="rec-server-info-value">${server.host}:${server.port}</div>
-                                </div>
-                            </div>
-                        `;
+                       let html = `
+                           <div class="rec-server-header">
+                               <div class="rec-server-name">${server.name}</div>
+                               <div class="rec-server-status">
+                                   <span class="status-online"></span>
+                                   <span style="color: #4ade80;">在线</span>
+                               </div>
+                           </div>
+                           <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
+                           <div class="rec-server-info">
+                               <div class="rec-server-info-item">
+                                   <div class="rec-server-info-label">在线玩家</div>
+                                   <div class="rec-server-info-value" style="color: #00d4ff; font-weight: bold;">${playersOnline} / ${playersMax}</div>
+                               </div>
+                               <div class="rec-server-info-item">
+                                   <div class="rec-server-info-label">当前版本</div>
+                                   <div class="rec-server-info-value">${version}</div>
+                               </div>
+                               <div class="rec-server-info-item">
+                                   <div class="rec-server-info-label">服务器地址</div>
+                                   <div class="rec-server-info-value">${server.host}:${server.port}</div>
+                               </div>
+                           </div>
+                       `;
 
-                        if (motd && motd !== '无 MOTD') {
-                            html += `<div class="rec-server-motd">${motd}</div>`;
-                        }
+                       if (motd && motd !== '无 MOTD') {
+                           html += `<div class="rec-server-motd">${motd}</div>`;
+                       }
 
-                        if (playerList.length > 0) {
-                            html += `<div style="margin-top: 8px; color: #888; font-size: 0.85em;">在线玩家：</div><div class="rec-server-players">`;
-                            playerList.forEach(p => {
-                                html += `<span class="rec-server-player-tag">${p.name_clean}</span>`;
-                            });
-                            html += `</div>`;
-                        }
+                       if (playerList.length > 0) {
+                           html += `<div style="margin-top: 8px; color: #888; font-size: 0.85em;">在线玩家：</div><div class="rec-server-players">`;
+                           playerList.forEach(p => {
+                               html += `<span class="rec-server-player-tag">${p.name_clean}</span>`;
+                           });
+                           html += `</div>`;
+                       }
 
-                        if (server.website) {
-                            html += `<div style="margin-top: 10px; text-align: right;"><a href="${server.website}" target="_blank" style="color: #00d4ff; text-decoration: none; font-size: 0.85em;">访问官网 →</a></div>`;
-                        }
+                       if (server.website) {
+                           html += `<div style="margin-top: 10px; text-align: right;"><a href="${server.website}" target="_blank" style="color: #00d4ff; text-decoration: none; font-size: 0.85em;">访问官网 →</a></div>`;
+                       }
 
-                        card.innerHTML = html;
-                    } else {
-                        card.innerHTML = `
-                            <div class="rec-server-header">
-                                <div class="rec-server-name">${server.name}</div>
-                                <div class="rec-server-status">
-                                    <span class="status-offline"></span>
-                                    <span style="color: #ef4444;">离线</span>
-                                </div>
-                            </div>
-                            <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
-                            <div class="rec-server-error">
-                                无法连接到 ${server.host}:${server.port}<br>
-                                服务器可能正在维护或已关闭
-                            </div>
-                        `;
-                    }
-                } catch (error) {
-                    card.innerHTML = `
-                        <div class="rec-server-header">
-                            <div class="rec-server-name">${server.name}</div>
-                            <div class="rec-server-status">
-                                <span class="status-offline"></span>
-                                <span style="color: #ef4444;">查询失败</span>
-                            </div>
-                        </div>
-                        <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
-                        <div class="rec-server-error">
-                            无法获取服务器状态<br>
-                            错误：${error.message}
-                        </div>
-                    `;
-                }
-            }
-        }
+                       card.innerHTML = html;
+                   } else {
+                       card.innerHTML = `
+                           <div class="rec-server-header">
+                               <div class="rec-server-name">${server.name}</div>
+                               <div class="rec-server-status">
+                                   <span class="status-offline"></span>
+                                   <span style="color: #ef4444;">离线</span>
+                               </div>
+                           </div>
+                           <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
+                           <div class="rec-server-error">
+                               无法连接到 ${server.host}:${server.port}<br>
+                               服务器可能正在维护或已关闭
+                           </div>
+                       `;
+                   }
+               } catch (error) {
+                   card.innerHTML = `
+                       <div class="rec-server-header">
+                           <div class="rec-server-name">${server.name}</div>
+                           <div class="rec-server-status">
+                               <span class="status-offline"></span>
+                               <span style="color: #ef4444;">查询失败</span>
+                           </div>
+                       </div>
+                       <div style="color: #888; font-size: 0.9em; margin-bottom: 8px;">${server.desc}</div>
+                       <div class="rec-server-error">
+                           无法获取服务器状态<br>
+                           错误：${error.message}
+                       </div>
+                   `;
+               }
+           }
+       }
 
-        checkServer();
-        checkRecServers();
-    </script>
+       checkServer();
+       checkRecServers();
+   </script>
 </body>
 </html>
