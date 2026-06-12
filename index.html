@@ -675,7 +675,7 @@
 
         <div class="footer">
             <p>© 2026 LBCraft · 凌冰工作室</p>
-            <p style="margin-top: 10px;">发布日期： 2026-06-13</p>
+            <p style="margin-top: 10px;">发布日期： 2026-06-11</p>
         </div>
     </div>
 
@@ -713,7 +713,7 @@
         const REC_SERVERS = [
             { name: 'Syutopia Server', host: 'syutopia.top', port: '25565', desc: '时雨邦生存服务器', website: 'https://www.syutopia.top' },
             { name: 'YHMC', host: 'game.yhmc.top', port: '25565', desc: '以和为贵服务器', website: 'https://docs.qq.com/aio/DU3djUkxDSk5ZSmxC?p=LHyBzjFZyJWF4sClfFdadX' },
-            { name: 'NPCS', host: 'npcsmc.com', port: '25565', desc: '新土共建服务器', website: 'https://www.npcsmc.com' }
+            { name: 'NPCS', host: 'play.npcsmc.com', port: '23333', desc: '新土共建服务器', website: 'https://www.npcsmc.com' }
         ];
 
         async function checkServer() {
@@ -838,7 +838,7 @@
                                 </div>
                                 <div class="rec-server-info-item">
                                     <div class="rec-server-info-label">服务器地址</div>
-                                    <div class="rec-server-info-value">${server.host}</div>
+                                    <div class="rec-server-info-value">${server.host}:${server.port}</div>
                                 </div>
                             </div>
                         `;
